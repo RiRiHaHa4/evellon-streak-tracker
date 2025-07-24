@@ -39,7 +39,7 @@
 
     .streaks {
       display: flex;
-      gap: 40px;
+      gap: 20px;
       flex-wrap: wrap;
       justify-content: center;
       width: 100%;
@@ -54,7 +54,8 @@
       box-shadow: 0 0 8px #00fff7, 0 0 10px #00fff7;
       animation: pulse 2.8s ease-in-out infinite;
       text-align: center;
-      min-width: 260px;
+      flex: 1 1 220px;
+      min-width: 0;
       position: relative;
       overflow: hidden;
       will-change: box-shadow;
@@ -101,7 +102,7 @@
     .solid-tracker {
       display: flex;
       justify-content: center;
-      gap: 40px;
+      gap: 20px;
       margin-top: 40px;
       flex-wrap: wrap;
       width: 100%;
@@ -113,7 +114,8 @@
       border: 2px solid #c8b370;
       border-radius: 16px;
       padding: 20px 28px;
-      min-width: 180px;
+      flex: 1 1 160px;
+      min-width: 0;
       box-shadow: 0 0 10px #c8b37088;
       text-align: center;
     }
@@ -234,7 +236,7 @@
     }
 
     /* Responsive adjustments for smaller embeds */
-    @media screen and (max-width: 600px) {
+    @media screen and (max-width: 500px) {
       .container {
         padding: 20px 10px;
       }
@@ -247,10 +249,7 @@
 
       .streak-box,
       .solid-box {
-        min-width: 0;
-        width: 100%;
         padding: 16px 24px;
-        box-sizing: border-box;
       }
 
       .title {
