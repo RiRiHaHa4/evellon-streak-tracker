@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Evellon Streak Tracker</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(-45deg, #197049, #0b3f28, #197049, #0b3f28);
+      background-size: 400% 400%;
+      animation: shimmer 15s ease infinite;
+      color: #f5f5f5;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: 30px;
+    }
+
+    .streaks {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .streak-box {
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid #00fff7;
+      border-radius: 20px;
+      padding: 24px 32px;
+      box-shadow: 0 0 8px #00fff7, 0 0 10px #00fff7;
+      animation: pulse 2.8s ease-in-out infinite;
+      text-align: center;
+      min-width: 260px;
+      position: relative;
+      overflow: hidden;
+      will-change: box-shadow;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 8px #00fff7, 0 0 10px #00fff7; }
+      50% { box-shadow: 0 0 16px #00fff7, 0 0 24px #00fff7; }
+      100% { box-shadow: 0 0 8px #00fff7, 0 0 10px #00fff7; }
+    }
+
+    .name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .count {
+      font-size: 2.6rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      font-size: 1rem;
+      padding: 8px 18px;
+      margin: 4px;
+      border: none;
+      border-radius: 30px;
+      background-color: #00fff7;
+      color: #0b3f28;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .btn:disabled {
+      background-color: #ddd;
+      color: #bbb;
+      opacity: 0.25;
+      cursor: default;
+    }
+
+    .solid-tracker {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+
+    .solid-box {
+      background: rgba(255, 255, 255, 0.06);
+      border: 2px solid #c8b370;
+      border-radius: 16px;
+      padding: 20px 28px;
+      min-width: 180px;
+      box-shadow: 0 0 10px #c8b37088;
+      text-align: center;
+    }
+
+    .solid-box h3 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #f2f0ea;
+    }
+
+    .solid-count {
+      font-size: 2.2rem;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .solid-btn {
+      font-size: 1.2rem;
+      padding: 4px 12px;
+      margin: 0 6px;
+      border: none;
+      border-radius: 50px;
+      background-color: #c8b370;
+      color: #0b3f28;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 60px;
+      font-size: 0.9rem;
+      text-align: center;
+      color: #d3cec0;
+    }
+
+    .pulse {
+      animation: pulseBorder 0.4s ease;
+    }
+
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 0px #c8b370; }
+      50% { box-shadow: 0 0 20px #c8b370; }
+      100% { box-shadow: 0 0 0px #c8b370; }
+    }
+
+    .pop {
+      animation: popScale 0.4s ease;
+    }
+
+    @keyframes popScale {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    .shake {
+      animation: shakeX 0.4s ease;
+    }
+
+    @keyframes shakeX {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    .flash {
+      animation: flashRed 0.2s alternate 4;
+    }
+
+    @keyframes flashRed {
+      from { color: red; }
+      to { color: white; }
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 5px;
+      background: #f5f5f5;
+      z-index: 5;
+      border-radius: 2px;
+      animation: confetti-fall var(--duration) linear forwards, confetti-rotate 2s linear infinite;
+      left: calc(0% + (100% * var(--x-position)));
+      top: var(--start-y);
+      opacity: 1;
+      transform-origin: center;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        top: var(--start-y);
+      }
+      100% {
+        top: calc(100% + 100px);
+      }
+    }
+
+    @keyframes confetti-rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .shimmer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+      background-size: 200% 200%;
+      background-repeat: no-repeat;
+      animation: shimmer-slide 0.75s linear 4 alternate;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    @keyframes shimmer-slide {
+      0% { background-position: -150% -150%; }
+      100% { background-position: 150% 150%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">Evellon Streaks</div>
+    <div class="streaks">
+      <div class="streak-box" id="rishiBox">
+        <div class="name">Rishi</div>
+        <div class="count" id="rishiStreak">0</div>
+        <button class="btn" id="rishiLock">Lock In</button>
+        <button class="btn" id="rishiVeto">Veto</button>
+      </div>
+      <div class="streak-box" id="harishBox">
+        <div class="name">Harish</div>
+        <div class="count" id="harishStreak">0</div>
+        <button class="btn" id="harishLock">Lock In</button>
+        <button class="btn" id="harishVeto">Veto</button>
+      </div>
+    </div>
+
+    <div class="solid-tracker">
+      <div class="solid-box" id="rishiSolidBox">
+        <h3>Rishi's Solids</h3>
+        <div class="solid-count" id="rishiSolid">0</div>
+        <button class="solid-btn" onclick="updateSolid('rishi', -1)">−</button>
+        <button class="solid-btn" onclick="updateSolid('rishi', 1)">+</button>
+      </div>
+      <div class="solid-box" id="harishSolidBox">
+        <h3>Harish's Solids</h3>
+        <div class="solid-count" id="harishSolid">0</div>
+        <button class="solid-btn" onclick="updateSolid('harish', -1)">−</button>
+        <button class="solid-btn" onclick="updateSolid('harish', 1)">+</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>Buttons reset at local midnight</div>
+      <div id="recordDisplay">Streak Record Stands at 0 achieved by — on --/--/--</div>
+    </div>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyC39TMw6d2HtHxnT9R2AB3lhqNaCAbX2H0",
+      authDomain: "evellon-streak-tracker.firebaseapp.com",
+      databaseURL: "https://evellon-streak-tracker-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "evellon-streak-tracker",
+      storageBucket: "evellon-streak-tracker.appspot.com",
+      messagingSenderId: "755072896437",
+      appId: "1:755072896437:web:808ff7699347f7e41fddfc"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function getLocalDateString() {
+      const now = new Date();
+      return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}`;
+    }
+
+    function calculateDaysDiff(lastDateStr, todayStr) {
+      const [ly, lm, ld] = lastDateStr.split('-').map(Number);
+      const lastD = new Date(ly, lm - 1, ld);
+      const [ty, tm, td] = todayStr.split('-').map(Number);
+      const todayD = new Date(ty, tm - 1, td);
+      return Math.floor((todayD - lastD) / (1000 * 60 * 60 * 24));
+    }
+
+    function getYesterdayString() {
+      const now = new Date();
+      const yesterday = new Date(now);
+      yesterday.setDate(now.getDate() - 1);
+      return `${yesterday.getFullYear()}-${(yesterday.getMonth() + 1).toString().padStart(2, '0')}-${yesterday.getDate().toString().padStart(2, '0')}`;
+    }
+
+    function updateSolid(name, delta) {
+      const ref = db.ref(name + 'Solid');
+      ref.once('value', snap => {
+        const current = snap.val() || 0;
+        const newVal = Math.max(0, current + delta);
+        ref.set(newVal);
+        document.getElementById(name + 'Solid').textContent = newVal;
+        const box = document.getElementById(name + 'SolidBox');
+        box.classList.add('pulse');
+        setTimeout(() => box.classList.remove('pulse'), 400);
+      });
+    }
+
+    function loadSolid(name) {
+      db.ref(name + 'Solid').once('value', snap => {
+        document.getElementById(name + 'Solid').textContent = snap.val() || 0;
+      });
+    }
+
+    function loadRecord() {
+      db.ref('record').once('value', snap => {
+        const record = snap.val();
+        if (record) {
+          const date = new Date(record.date);
+          const ddmmyy = `${date.getDate().toString().padStart(2, '0')}/` +
+                         `${(date.getMonth() + 1).toString().padStart(2, '0')}/` +
+                         `${date.getFullYear().toString().slice(-2)}`;
+          document.getElementById("recordDisplay").textContent =
+            `Streak Record Stands at ${record.value} achieved by ${record.name.charAt(0).toUpperCase() + record.name.slice(1)} on ${ddmmyy}`;
+        }
+      });
+    }
+
+    function checkResetAndAwardSolid(name) {
+      const today = getLocalDateString();
+      const ref = db.ref(name);
+      ref.once('value', snap => {
+        const data = snap.val();
+        if (!data) return;
+        const last = data.lastDate || '1970-01-01'; // Fallback for no lastDate
+        const diff = calculateDaysDiff(last, today);
+        if (diff > 1) {
+          const solidsToAward = diff - 1;
+          const other = name === 'rishi' ? 'harish' : 'rishi';
+          updateSolid(other, solidsToAward);
+
+          if (data.streak > 0) {
+            const countEl = document.getElementById(name + 'Streak');
+            let count = data.streak;
+            const flash = setInterval(() => {
+              if (count > 0) {
+                countEl.textContent = count--;
+                countEl.classList.add('flash');
+                setTimeout(() => countEl.classList.remove('flash'), 200);
+              } else {
+                clearInterval(flash);
+                countEl.textContent = 0;
+              }
+            }, 200);
+            const yesterday = getYesterdayString();
+            ref.set({ streak: 0, lastDate: yesterday });
+          } else {
+            const yesterday = getYesterdayString();
+            ref.set({ streak: 0, lastDate: yesterday });
+          }
+        }
+      });
+    }
+
+    function setupButtons(name) {
+      const lockBtn = document.getElementById(name + 'Lock');
+      const vetoBtn = document.getElementById(name + 'Veto');
+
+      lockBtn.addEventListener('click', () => {
+        const container = document.getElementById(name + 'Box');
+        const height = container.clientHeight;
+        const speed = 150; // px/s, adjust for desired speed
+        const totalTime = 3000; // 3 seconds for continuous confetti
+        const numConfetti = 200;
+        for (let i = 0; i < numConfetti; i++) {
+          setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.classList.add('confetti');
+            const startY = Math.random() * -80 - 20;
+            const distance = height - startY + 100; // buffer to ensure offscreen
+            const duration = distance / speed;
+            confetti.style.setProperty('--x-position', Math.random());
+            confetti.style.setProperty('--start-y', startY + 'px');
+            confetti.style.setProperty('--duration', duration + 's');
+            confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+            container.appendChild(confetti);
+            setTimeout(() => confetti.remove(), duration * 1000 + 100); // remove after animation + buffer
+          }, Math.random() * totalTime);
+        }
+
+        const today = getLocalDateString();
+        db.ref(name).once('value', snap => {
+          const data = snap.val() || {};
+          if (data.lastDate === today) return;
+          const newStreak = (data.streak || 0) + 1;
+          db.ref(name).set({ streak: newStreak, lastDate: today });
+          const streakEl = document.getElementById(name + 'Streak');
+          streakEl.textContent = newStreak;
+          streakEl.classList.add('pop');
+          setTimeout(() => streakEl.classList.remove('pop'), 400);
+
+          db.ref('record').once('value', rSnap => {
+            const record = rSnap.val();
+            if (!record || newStreak > record.value) {
+              db.ref('record').set({ value: newStreak, name, date: today });
+              loadRecord();
+            }
+          });
+          lockBtn.disabled = true;
+          vetoBtn.disabled = true;
+        });
+      });
+
+      vetoBtn.addEventListener('click', () => {
+        const shimmer = document.createElement('div');
+        shimmer.classList.add('shimmer');
+        const box = document.getElementById(name + 'Box');
+        box.appendChild(shimmer);
+        setTimeout(() => shimmer.remove(), 3000);
+
+        const today = getLocalDateString();
+        db.ref(name).once('value', snap => {
+          const data = snap.val() || {};
+          if (data.lastDate === today) return;
+          db.ref(name).update({ lastDate: today });
+          const streakEl = document.getElementById(name + 'Streak');
+          streakEl.classList.add('shake');
+          setTimeout(() => streakEl.classList.remove('shake'), 400);
+        });
+        lockBtn.disabled = true;
+        vetoBtn.disabled = true;
+      });
+    }
+
+    function monitorResets() {
+      ['rishi', 'harish'].forEach(name => checkResetAndAwardSolid(name));
+    }
+
+    ['rishi', 'harish'].forEach(name => {
+      setupButtons(name);
+      loadSolid(name);
+      db.ref(name).on('value', snap => {
+        const data = snap.val();
+        const streakEl = document.getElementById(name + 'Streak');
+        const lockBtn = document.getElementById(name + 'Lock');
+        const vetoBtn = document.getElementById(name + 'Veto');
+        const today = getLocalDateString();
+        if (data) {
+          streakEl.textContent = data.streak || 0;
+          if (data.lastDate === today) {
+            lockBtn.disabled = true;
+            vetoBtn.disabled = true;
+          } else {
+            lockBtn.disabled = false;
+            vetoBtn.disabled = false;
+          }
+        } else {
+          streakEl.textContent = 0;
+          lockBtn.disabled = false;
+          vetoBtn.disabled = false;
+        }
+      });
+    });
+
+    loadRecord();
+    monitorResets();
+  </script>
+</body>
+</html>
