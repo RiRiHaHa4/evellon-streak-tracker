@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Evellon Streak Tracker</title>
+  <title>Evellon Oils Tracker</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -15,6 +15,9 @@
       background-size: 400% 400%;
       animation: shimmer 15s ease infinite;
       color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     @keyframes shimmer {
@@ -23,15 +26,81 @@
       100% { background-position: 0% 50%; }
     }
 
-    .container {
+    .main-container {
+      width: 100%;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px 20px;
-      box-sizing: border-box;
+      padding: 20px;
     }
 
-    .title {
+    /* Top Counter Styles */
+    .top-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .top-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: #f2f0ea;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .counter-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    .counter {
+      font-size: 2rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      padding: 12px 24px;
+      border-radius: 16px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #00fff7;
+      box-shadow: 0 0 8px #00fff7;
+      animation: pulseGlow 2.8s ease-in-out infinite;
+      white-space: nowrap;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 8px #00fff7, 0 0 10px #00fff7; }
+      50% { box-shadow: 0 0 16px #00fff7, 0 0 24px #00fff7; }
+      100% { box-shadow: 0 0 8px #00fff7, 0 0 10px #00fff7; }
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      margin-top: 10px;
+      color: #dcd6c3;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    /* Streaks Section Styles */
+    .streaks-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .streaks-title {
       font-family: 'Playfair Display', serif;
       font-size: 2rem;
       margin-bottom: 30px;
@@ -50,15 +119,23 @@
       background: rgba(255, 255, 255, 0.08);
       border: 2px solid #00fff7;
       border-radius: 20px;
-      padding: 24px 32px;
+      padding: 24px 12px;
       box-shadow: 0 0 8px #00fff7, 0 0 10px #00fff7;
       animation: pulse 2.8s ease-in-out infinite;
       text-align: center;
-      flex: 1 1 220px;
+      flex: 0 1 150px;
       min-width: 0;
+      max-width: 180px;
       position: relative;
       overflow: hidden;
       will-change: box-shadow;
+    }
+
+    .streak-box .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 10px;
     }
 
     @keyframes pulse {
@@ -81,7 +158,7 @@
 
     .btn {
       font-size: 1rem;
-      padding: 8px 18px;
+      padding: 6px 12px;
       margin: 4px;
       border: none;
       border-radius: 30px;
@@ -90,6 +167,8 @@
       cursor: pointer;
       font-weight: 600;
       transition: background 0.3s;
+      white-space: nowrap;
+      flex: 0 0 auto;
     }
 
     .btn:disabled {
@@ -113,9 +192,10 @@
       background: rgba(255, 255, 255, 0.06);
       border: 2px solid #c8b370;
       border-radius: 16px;
-      padding: 20px 28px;
-      flex: 1 1 160px;
+      padding: 8px 12px;
+      flex: 0 1 120px;
       min-width: 0;
+      max-width: 150px;
       box-shadow: 0 0 10px #c8b37088;
       text-align: center;
     }
@@ -235,10 +315,28 @@
       100% { background-position: 150% 150%; }
     }
 
-    /* Responsive adjustments for smaller embeds */
+    /* Responsive adjustments */
     @media screen and (max-width: 500px) {
-      .container {
+      .main-container {
         padding: 20px 10px;
+      }
+
+      .top-title {
+        font-size: 1.3rem;
+      }
+
+      .counter {
+        font-size: 1.8rem;
+        padding: 10px 20px;
+      }
+
+      .subtitle {
+        font-size: 0.8rem;
+      }
+
+      .streaks-title {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
       }
 
       .streaks,
@@ -250,11 +348,6 @@
       .streak-box,
       .solid-box {
         padding: 16px 24px;
-      }
-
-      .title {
-        font-size: 1.5rem;
-        margin-bottom: 20px;
       }
 
       .name {
@@ -286,8 +379,26 @@
     }
 
     @media screen and (max-width: 400px) {
-      .container {
+      .main-container {
         padding: 10px 5px;
+      }
+
+      .top-title {
+        font-size: 1rem;
+      }
+
+      .counter {
+        font-size: 1.5rem;
+        padding: 8px 16px;
+      }
+
+      .subtitle {
+        font-size: 0.7rem;
+      }
+
+      .streaks-title {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
       }
 
       .streaks,
@@ -298,11 +409,6 @@
       .streak-box,
       .solid-box {
         padding: 12px 16px;
-      }
-
-      .title {
-        font-size: 1.2rem;
-        margin-bottom: 15px;
       }
 
       .name {
@@ -325,46 +431,74 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="title">Evellon Streaks</div>
-    <div class="streaks">
-      <div class="streak-box" id="rishiBox">
-        <div class="name">Rishi</div>
-        <div class="count" id="rishiStreak">0</div>
-        <button class="btn" id="rishiLock">Lock In</button>
-        <button class="btn" id="rishiVeto">Veto</button>
+  <div class="main-container">
+    <div class="top-section">
+      <div class="top-title">Evellon Oils has been scenting spaces for...</div>
+      <div class="counter-wrapper">
+        <div class="counter" id="daysSince">Loading...</div>
       </div>
-      <div class="streak-box" id="harishBox">
-        <div class="name">Harish</div>
-        <div class="count" id="harishStreak">0</div>
-        <button class="btn" id="harishLock">Lock In</button>
-        <button class="btn" id="harishVeto">Veto</button>
-      </div>
+      <div class="subtitle">...since our journey began on June 13, 2025</div>
     </div>
 
-    <div class="solid-tracker">
-      <div class="solid-box" id="rishiSolidBox">
-        <h3>Rishi's Solids</h3>
-        <div class="solid-count" id="rishiSolid">0</div>
-        <button class="solid-btn" onclick="updateSolid('rishi', -1)">−</button>
-        <button class="solid-btn" onclick="updateSolid('rishi', 1)">+</button>
+    <div class="streaks-section">
+      <div class="streaks-title">Evellon Streaks</div>
+      <div class="streaks">
+        <div class="streak-box" id="rishiBox">
+          <div class="name">Rishi</div>
+          <div class="count" id="rishiStreak">0</div>
+          <div class="button-container">
+            <button class="btn" id="rishiLock">Lock In</button>
+            <button class="btn" id="rishiVeto">Veto</button>
+          </div>
+        </div>
+        <div class="streak-box" id="harishBox">
+          <div class="name">Harish</div>
+          <div class="count" id="harishStreak">0</div>
+          <div class="button-container">
+            <button class="btn" id="harishLock">Lock In</button>
+            <button class="btn" id="harishVeto">Veto</button>
+          </div>
+        </div>
       </div>
-      <div class="solid-box" id="harishSolidBox">
-        <h3>Harish's Solids</h3>
-        <div class="solid-count" id="harishSolid">0</div>
-        <button class="solid-btn" onclick="updateSolid('harish', -1)">−</button>
-        <button class="solid-btn" onclick="updateSolid('harish', 1)">+</button>
-      </div>
-    </div>
 
-    <div class="footer">
-      <div>Buttons reset at local midnight</div>
-      <div id="recordDisplay">Streak Record Stands at 0 achieved by — on --/--/--</div>
+      <div class="solid-tracker">
+        <div class="solid-box" id="rishiSolidBox">
+          <h3>Rishi's Solids</h3>
+          <div class="solid-count" id="rishiSolid">0</div>
+          <button class="solid-btn" onclick="updateSolid('rishi', -1)">−</button>
+          <button class="solid-btn" onclick="updateSolid('rishi', 1)">+</button>
+        </div>
+        <div class="solid-box" id="harishSolidBox">
+          <h3>Harish's Solids</h3>
+          <div class="solid-count" id="harishSolid">0</div>
+          <button class="solid-btn" onclick="updateSolid('harish', -1)">−</button>
+          <button class="solid-btn" onclick="updateSolid('harish', 1)">+</button>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div>Buttons reset at local midnight</div>
+        <div id="recordDisplay">Streak Record Stands at 0 achieved by — on --/--/--</div>
+      </div>
     </div>
   </div>
 
   <script>
-    // Firebase config
+    // Counter Script
+    const startDate = new Date("June 13, 2025").getTime();
+    const counter = document.getElementById("daysSince");
+
+    function updateDays() {
+      const now = new Date().getTime();
+      const diff = now - startDate;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      counter.textContent = `${days} day${days !== 1 ? 's' : ''}`;
+    }
+
+    updateDays();
+    setInterval(updateDays, 1000 * 60 * 60); // every hour
+
+    // Firebase config and Streaks Script
     const firebaseConfig = {
       apiKey: "AIzaSyC39TMw6d2HtHxnT9R2AB3lhqNaCAbX2H0",
       authDomain: "evellon-streak-tracker.firebaseapp.com",
